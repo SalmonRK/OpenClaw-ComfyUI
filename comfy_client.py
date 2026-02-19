@@ -10,7 +10,6 @@ COMFY_PORT = "8190"
 COMFY_URL = f"http://{COMFY_HOST}:{COMFY_PORT}"
 
 SKILL_ROOT = os.path.dirname(os.path.abspath(__file__))
-# Get workspace root (assumed to be 2 levels up from skills/comfyui/)
 WORKSPACE_ROOT = os.path.abspath(os.path.join(SKILL_ROOT, "..", ".."))
 OUTPUT_DIR = os.path.join(WORKSPACE_ROOT, "outputs", "comfy")
 WORKFLOW_DIR = os.path.join(SKILL_ROOT, "workflows")
@@ -48,13 +47,25 @@ def download_image(filename, subfolder, folder_type):
 
 def main():
     if len(sys.argv) < 3:
-        print(json.dumps({"error": "Usage: python3 comfy_client.py <template_id> <prompt_text> [input_image_path]"}))
+        print(json.dumps({"error": "Usage: python3 comfy_client.py <template_id> <prompt_text> [input_image_path/orientation] [orientation]"}))
         return
 
     template_id = sys.argv[1]
     prompt_text = sys.argv[2]
-    input_image_path = sys.argv[3] if len(sys.argv) > 3 else None
     
+    # Logic to handle flexible arguments
+    input_image_path = None
+    orientation = "portrait" # Default to 720p vertical
+
+    for arg in sys.argv[3:]:
+        if arg.lower() in ["portrait", "landscape"]:
+            orientation = arg.lower()
+        elif os.path.exists(arg):
+            input_image_path = arg
+
+    # Set dimensions based on 720p
+    width, height = (720, 1280) if orientation == "portrait" else (1280, 720)
+
     if template_id not in WORKFLOW_MAP:
         print(json.dumps({"error": f"Unknown template: {template_id}"}))
         return
@@ -62,28 +73,30 @@ def main():
     with open(WORKFLOW_MAP[template_id], 'r') as f:
         workflow = json.load(f)
 
-    # Handle Image Upload if needed
+    # Handle Image Upload
     uploaded_filename = None
     if input_image_path:
-        print(f"Uploading image: {input_image_path}...", file=sys.stderr)
         upload_res = upload_image(input_image_path)
         uploaded_filename = upload_res.get("name")
-        if not uploaded_filename:
-            print(json.dumps({"error": "Upload failed", "res": upload_res}))
-            return
 
-    # Inject values into Workflow
+    # Inject Values
     for node_id in workflow:
         node = workflow[node_id]
+        
         # Inject Prompt
         if node.get("class_type") == "CLIPTextEncode":
             if "inputs" in node and "text" in node["inputs"]:
-                # Simple logic: replace if it contains "prompt" or is empty (adjust as needed)
                 node["inputs"]["text"] = prompt_text
         
-        # Inject Image for Edit
+        # Inject Image
         if uploaded_filename and node.get("class_type") == "LoadImage":
             node["inputs"]["image"] = uploaded_filename
+
+        # Inject Dimensions (Common Node Classes for size)
+        if node.get("class_type") in ["EmptyLatentImage", "LatentImage", "EmptyImage", "EmptySD3LatentImage"]:
+            if "inputs" in node:
+                node["inputs"]["width"] = width
+                node["inputs"]["height"] = height
 
     # Send Job
     prompt_res = send_prompt(workflow)
@@ -93,7 +106,7 @@ def main():
         print(json.dumps({"error": "Failed to get prompt_id", "response": prompt_res}))
         return
 
-    print(f"Job sent! ID: {prompt_id}. Waiting for result...", file=sys.stderr)
+    print(f"Job sent! ID: {prompt_id} ({orientation} {width}x{height}). Waiting...", file=sys.stderr)
     while True:
         history = check_history(prompt_id)
         if prompt_id in history:
@@ -106,7 +119,8 @@ def main():
                         "status": "success",
                         "prompt_id": prompt_id,
                         "local_path": local_path,
-                        "filename": img_data["filename"]
+                        "orientation": orientation,
+                        "resolution": f"{width}x{height}"
                     }))
                     return
         time.sleep(2)
