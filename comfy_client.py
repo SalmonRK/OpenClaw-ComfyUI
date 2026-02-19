@@ -53,9 +53,8 @@ def main():
     template_id = sys.argv[1]
     prompt_text = sys.argv[2]
     
-    # Logic to handle flexible arguments
     input_image_path = None
-    orientation = "portrait" # Default to 720p vertical
+    orientation = "portrait" 
 
     for arg in sys.argv[3:]:
         if arg.lower() in ["portrait", "landscape"]:
@@ -63,7 +62,6 @@ def main():
         elif os.path.exists(arg):
             input_image_path = arg
 
-    # Set dimensions based on 720p
     width, height = (720, 1280) if orientation == "portrait" else (1280, 720)
 
     if template_id not in WORKFLOW_MAP:
@@ -73,32 +71,31 @@ def main():
     with open(WORKFLOW_MAP[template_id], 'r') as f:
         workflow = json.load(f)
 
-    # Handle Image Upload
     uploaded_filename = None
     if input_image_path:
         upload_res = upload_image(input_image_path)
         uploaded_filename = upload_res.get("name")
 
-    # Inject Values
     for node_id in workflow:
         node = workflow[node_id]
         
-        # Inject Prompt
-        if node.get("class_type") == "CLIPTextEncode":
-            if "inputs" in node and "text" in node["inputs"]:
-                node["inputs"]["text"] = prompt_text
+        # --- FIXED PROMPT INJECTION ---
+        # Handle both standard CLIPTextEncode and Qwen Specific TextEncode
+        if node.get("class_type") in ["CLIPTextEncode", "TextEncodeQwenImageEditPlus"]:
+            if "inputs" in node:
+                if "prompt" in node["inputs"]:
+                    node["inputs"]["prompt"] = prompt_text
+                elif "text" in node["inputs"]:
+                    node["inputs"]["text"] = prompt_text
         
-        # Inject Image
         if uploaded_filename and node.get("class_type") == "LoadImage":
             node["inputs"]["image"] = uploaded_filename
 
-        # Inject Dimensions (Common Node Classes for size)
         if node.get("class_type") in ["EmptyLatentImage", "LatentImage", "EmptyImage", "EmptySD3LatentImage"]:
             if "inputs" in node:
                 node["inputs"]["width"] = width
                 node["inputs"]["height"] = height
 
-    # Send Job
     prompt_res = send_prompt(workflow)
     prompt_id = prompt_res.get("prompt_id")
     
