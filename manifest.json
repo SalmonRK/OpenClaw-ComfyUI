@@ -1,10 +1,10 @@
 {
   "name": "comfyui-skill",
-  "version": "1.0.1",
-  "description": "Professional ComfyUI control skill for OpenClaw with token-saving architecture, auto-asset management, and 720p resolution control.",
+  "version": "1.0.3",
+  "description": "Professional ComfyUI control skill for OpenClaw with token-saving architecture, auto-asset management (Image/Video/Audio), and dynamic security validation.",
   "author": "SalmonRK",
   "repository": "https://github.com/SalmonRK/OpenClaw-ComfyUI",
-  "keywords": ["comfyui", "image-generation", "ai-art", "automation", "token-saving"],
+  "keywords": ["comfyui", "ai-automation", "token-saving", "security-first"],
   "license": "MIT",
   "main": "comfy_client.py",
   "skill_file": "SKILL.md"
