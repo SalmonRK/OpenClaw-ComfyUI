@@ -1,30 +1,32 @@
 # ComfyUI-OpenClaw Skill 🎨✨
 
-Skill สำหรับเชื่อมต่อและสั่งงาน ComfyUI API อย่างมีประสิทธิภาพ (ประหยัด Token สูงสุด) โดยใช้ระบบ Template Mapping และ Auto-Asset Management.
+A professional, token-saving agent skill for connecting and controlling ComfyUI via API. Designed for high efficiency, automatic asset handling, and seamless integration with OpenClaw.
 
-## 🏗️ โครงสร้างของ Skill
-- **Host Address:** `192.168.1.38:8190` (บันทึกไว้ใน TOOLS.md)
-- **Workflow Directory:** `skills/comfyui/workflows/` (อยู่ภายใต้โฟลเดอร์ของ Skill)
+## 🏗️ Skill Structure
+- **Host Address:** `192.168.1.38:8190` (Configured in `TOOLS.md`)
+- **Workflow Directory:** `skills/comfyui/workflows/` (Self-contained within the skill folder)
 - **Output Directory:** `outputs/comfy/` (Relative to workspace root)
-- **Core Script:** `skills/comfyui/comfy_client.py`
+- **Core Script:** `skills/comfyui/comfy_client.py` (Handles prompt injection, image uploads, and result polling)
 
-## 🛠️ เครื่องมือที่ใช้งาน (CLI)
-เรียกใช้ผ่าน `exec` command:
+## 🛠️ Tools (CLI)
+Invoke via the `exec` command:
 `python3 skills/comfyui/comfy_client.py <template_id> "<prompt>" [input_image_path/orientation] [orientation]`
 
-- **orientation:** ระบุ `portrait` (720x1280) หรือ `landscape` (1280x720). ค่าเริ่มต้นคือ `portrait`.
+### Parameters:
+- **template_id:**
+    1. `gen_z`: Text-to-Image (uses `image_z_image_turbo.json`)
+    2. `qwen_edit`: Image-to-Image / Editing (uses `qwen_image_edit_2511.json`) - *Supports automatic image upload.*
+- **prompt:** The description of the image to generate or edits to perform.
+- **input_image_path:** (Optional) Local path for image-to-image tasks.
+- **orientation:** (Optional) Set to `portrait` (720x1280) or `landscape` (1280x720). Defaults to `portrait`.
 
-### ตัวเลือก Template ที่มีตอนนี้:
-1. `gen_z`: สำหรับสร้างรูปใหม่ (image_z_image_turbo.json)
-2. `qwen_edit`: สำหรับแก้ไขรูปภาพ (qwen_image_edit_2511.json) - **รองรับ Auto-Upload**
+## 💡 How to Add New Workflows
+You can expand this skill easily:
+1. Place your new API-formatted JSON workflow in `skills/comfyui/workflows/`.
+2. Update the `WORKFLOW_MAP` dictionary in `skills/comfyui/comfy_client.py` with a new ID and the file path.
+3. (Optional) If the workflow uses unique node types, adjust the injection logic in the script's `main()` function.
 
-## 💡 วิธีการเพิ่ม Workflow ใหม่ (Scalability)
-หากคุณ Salmon มี workflow ใหม่ (.json) สามารถใช้งานได้โดย:
-1. นำไฟล์ JSON ไปวางไว้ที่ `skills/comfyui/workflows/`
-2. อัปเดตตัวแปร `WORKFLOW_MAP` ในไฟล์ `skills/comfyui/comfy_client.py` เพิ่ม ID และ Path ของไฟล์ใหม่
-3. (Optional) หาก Workflow ใช้ Node เฉพาะเจาะจง ให้ปรับ Logic การ Inject ในส่วน `main()` ของสคริปต์
-
-## 🚀 กลยุทธ์ประหยัด Token และทรัพยากร
-- **No JSON in Prompt:** ห้ามส่งโครงสร้าง Workflow ลงในแชท ให้ใช้ `template_id` แทน
-- **Path-Based Messaging:** อ้างอิงไฟล์ภาพด้วย Local Path (Relative) แทนการใช้ Base64 ใน Prompt
-- **Direct Delivery:** ส่งภาพให้ผู้ใช้ผ่าน Telegram หรือเปิดบนเครื่อง Mac โดยตรงเพื่อลดภาระ Context Window ของ LLM
+## 🚀 Token-Saving Strategy
+- **Template Mapping:** Never send full workflow JSONs in the chat. Refer to them by `template_id`.
+- **Vision-Saving Strategy:** To minimize token usage, the agent should prioritize using the **file path from metadata** instead of analyzing image content via vision capabilities unless explicitly asked to describe or analyze the image.
+- **Direct Delivery:** Deliver images directly to users via messaging plugins (e.g., Telegram) or local file openers (`open`) to avoid bloating the LLM's context window with base64 data.
