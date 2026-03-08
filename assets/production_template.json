@@ -1,0 +1,16 @@
+{
+  "project_name": "Project Mockup",
+  "scenes": [
+    {
+      "scene_id": 1,
+      "prompt": "Scene description mockup",
+      "status": "pending",
+      "image_path": "",
+      "video_path": ""
+    }
+  ],
+  "global_settings": {
+    "style": "anime",
+    "output_dir": "outputs/animations/mockup"
+  }
+}

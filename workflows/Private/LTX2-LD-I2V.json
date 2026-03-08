@@ -1,0 +1,858 @@
+{
+  "107": {
+    "inputs": {
+      "frame_rate": [
+        "306",
+        0
+      ],
+      "positive": [
+        "121",
+        0
+      ],
+      "negative": [
+        "110",
+        0
+      ]
+    },
+    "class_type": "LTXVConditioning",
+    "_meta": {
+      "title": "LTXVConditioning"
+    }
+  },
+  "108": {
+    "inputs": {
+      "width": [
+        "163",
+        0
+      ],
+      "height": [
+        "163",
+        1
+      ],
+      "length": [
+        "187",
+        0
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptyLTXVLatentVideo",
+    "_meta": {
+      "title": "EmptyLTXVLatentVideo"
+    }
+  },
+  "109": {
+    "inputs": {
+      "video_latent": [
+        "161",
+        0
+      ],
+      "audio_latent": [
+        "199",
+        0
+      ]
+    },
+    "class_type": "LTXVConcatAVLatent",
+    "_meta": {
+      "title": "LTXVConcatAVLatent"
+    }
+  },
+  "110": {
+    "inputs": {
+      "text": [
+        "290",
+        2
+      ],
+      "clip": [
+        "190",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "neg"
+    }
+  },
+  "121": {
+    "inputs": {
+      "text": [
+        "290",
+        0
+      ],
+      "clip": [
+        "190",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "posttive"
+    }
+  },
+  "125": {
+    "inputs": {
+      "av_latent": [
+        "289",
+        0
+      ]
+    },
+    "class_type": "LTXVSeparateAVLatent",
+    "_meta": {
+      "title": "LTXVSeparateAVLatent"
+    }
+  },
+  "140": {
+    "inputs": {
+      "frame_rate": [
+        "306",
+        0
+      ],
+      "loop_count": 0,
+      "filename_prefix": "LTX2/seanhan-",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 19,
+      "save_metadata": true,
+      "trim_to_audio": false,
+      "pingpong": false,
+      "save_output": true,
+      "images": [
+        "279",
+        0
+      ],
+      "audio": [
+        "201",
+        0
+      ]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Video Combine 🎥🅥🅗🅢"
+    }
+  },
+  "161": {
+    "inputs": {
+      "strength": 1,
+      "bypass": false,
+      "vae": [
+        "184",
+        0
+      ],
+      "image": [
+        "162",
+        0
+      ],
+      "latent": [
+        "108",
+        0
+      ]
+    },
+    "class_type": "LTXVImgToVideoInplace",
+    "_meta": {
+      "title": "LTXVImgToVideoInplace"
+    }
+  },
+  "162": {
+    "inputs": {
+      "img_compression": 33,
+      "image": [
+        "246",
+        0
+      ]
+    },
+    "class_type": "LTXVPreprocess",
+    "_meta": {
+      "title": "LTXVPreprocess"
+    }
+  },
+  "163": {
+    "inputs": {
+      "image": [
+        "164",
+        0
+      ]
+    },
+    "class_type": "GetImageSize",
+    "_meta": {
+      "title": "Get Image Size"
+    }
+  },
+  "164": {
+    "inputs": {
+      "resize_type": "scale by multiplier",
+      "resize_type.multiplier": 0.5,
+      "scale_method": "area",
+      "input": [
+        "165",
+        0
+      ]
+    },
+    "class_type": "ResizeImageMaskNode",
+    "_meta": {
+      "title": "Resize Image/Mask"
+    }
+  },
+  "165": {
+    "inputs": {
+      "width": [
+        "194",
+        0
+      ],
+      "height": [
+        "195",
+        0
+      ],
+      "upscale_method": "nearest-exact",
+      "keep_proportion": "crop",
+      "pad_color": "0, 0, 0",
+      "crop_position": "center",
+      "divisible_by": 32,
+      "device": "cpu",
+      "image": [
+        "167",
+        0
+      ]
+    },
+    "class_type": "ImageResizeKJv2",
+    "_meta": {
+      "title": "Resize Image v2"
+    }
+  },
+  "167": {
+    "inputs": {
+      "image": "00039-573544564.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "184": {
+    "inputs": {
+      "vae_name": "LTX2\\LTX2_video_vae_bf16.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE (video VAE)"
+    }
+  },
+  "187": {
+    "inputs": {
+      "value": 360
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "LENGTH (frames)"
+    }
+  },
+  "189": {
+    "inputs": {
+      "model_name": "ltx-2-spatial-upscaler-x2-1.0.safetensors"
+    },
+    "class_type": "LatentUpscaleModelLoader",
+    "_meta": {
+      "title": "Load Latent Upscale Model"
+    }
+  },
+  "190": {
+    "inputs": {
+      "clip_name1": "LTX2\\gemma_3_12B_it_fp8_scaled.safetensors",
+      "clip_name2": "LTX2\\ltx-2-19b-embeddings_connector_distill_bf16.safetensors",
+      "type": "ltxv",
+      "device": "default"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": {
+      "title": "CLIPLoader (Gemma + LTX Embeddings)"
+    }
+  },
+  "194": {
+    "inputs": {
+      "value": [
+        "301",
+        0
+      ]
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "WIDTH"
+    }
+  },
+  "195": {
+    "inputs": {
+      "value": [
+        "301",
+        1
+      ]
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "HEIGHT"
+    }
+  },
+  "196": {
+    "inputs": {
+      "vae_name": "LTX2\\LTX2_audio_vae_bf16.safetensors",
+      "device": "main_device",
+      "weight_dtype": "bf16"
+    },
+    "class_type": "VAELoaderKJ",
+    "_meta": {
+      "title": "VAELoader KJ (audio VAE)"
+    }
+  },
+  "197": {
+    "inputs": {
+      "unet_name": "LTX2\\ltx-2-19b-distilled_Q6_K.gguf"
+    },
+    "class_type": "UnetLoaderGGUF",
+    "_meta": {
+      "title": "Unet Loader (GGUF)"
+    }
+  },
+  "199": {
+    "inputs": {
+      "frames_number": [
+        "187",
+        0
+      ],
+      "frame_rate": [
+        "302",
+        0
+      ],
+      "batch_size": 1,
+      "audio_vae": [
+        "196",
+        0
+      ]
+    },
+    "class_type": "LTXVEmptyLatentAudio",
+    "_meta": {
+      "title": "LTXV Empty Latent Audio"
+    }
+  },
+  "201": {
+    "inputs": {
+      "samples": [
+        "125",
+        1
+      ],
+      "audio_vae": [
+        "196",
+        0
+      ]
+    },
+    "class_type": "LTXVAudioVAEDecode",
+    "_meta": {
+      "title": "LTXV Audio VAE Decode"
+    }
+  },
+  "207": {
+    "inputs": {
+      "chunks": 8,
+      "dim_threshold": 4096,
+      "model": [
+        "222",
+        0
+      ]
+    },
+    "class_type": "LTXVChunkFeedForward",
+    "_meta": {
+      "title": "IF OOM CHANGE 4 > 16"
+    }
+  },
+  "222": {
+    "inputs": {
+      "sage_attention": "auto",
+      "allow_compile": false,
+      "model": [
+        "197",
+        0
+      ]
+    },
+    "class_type": "PathchSageAttentionKJ",
+    "_meta": {
+      "title": "Patch Sage Attention KJ (optional)"
+    }
+  },
+  "246": {
+    "inputs": {
+      "longer_edge": 1536,
+      "images": [
+        "165",
+        0
+      ]
+    },
+    "class_type": "ResizeImagesByLongerEdge",
+    "_meta": {
+      "title": "Resize Images by Longer Edge"
+    }
+  },
+  "255": {
+    "inputs": {
+      "unet_name": "ltx-2-19b-dev-fp8_transformer_only.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "257": {
+    "inputs": {
+      "preview": "In the dimly lit hotel room, the 22-year-old Chinese woman with long black hair stands confidently before the camera. A revealing red satin dress, adorned with delicate floral embroidery, clings to her curves. The lighting casts a warm glow on her features, as if a halo surrounds her head, isolating her against the dark background.\n\nThe soft hum of the room's air conditioning fills the silence, providing a subtle background noise. The woman's eyes lock onto the viewer, her gaze unwavering as if holding a secret. She brings her hands up, palms facing inward, forming a heart shape over her chest.\n\nWith a gentle touch, she slides her left hand along the bodice of the dress, the satin gliding smoothly across her skin, revealing the curve of her right shoulder. The camera lingers, capturing the subtle movement, as the fabric stretches and slides off her shoulder, exposing the delicate slope of her collarbone.\n\nAs her fingers continue to caress the dress, the woman's right hand reaches behind her, finding the zipper and slowly pulling it down, the sound of the teeth releasing punctuating the silence. The camera tilts down slightly, following the line of the zipper as it descends, revealing the creamy expanse of her back, the embroidery on the dress now emphasizing the curves of her spine.\n\nThe woman lets the dress slide down her arms, pooling at her feet, and stands before the camera in her matching red bra and lacy black underwear, the contrast of the cool, dark fabrics against her warm skin creating a striking visual. The soft whir of the air conditioning remains, a constant presence as the scene comes to a close. The camera holds, framing her unselfconscious beauty, before the darkness envelops the scene, marking the end of the clip. The room falls silent, leaving only the lingering impression of the woman's radiant confidence.󠁧󠁢󠁥󠁮󠁧󠁿",
+      "previewMode": null,
+      "source": [
+        "290",
+        1
+      ]
+    },
+    "class_type": "PreviewAny",
+    "_meta": {
+      "title": "Prompt preview."
+    }
+  },
+  "263": {
+    "inputs": {
+      "stack_data": "[{\"on\":true,\"lora\":\"LTX2\\\\ltx-2-19b-ic-lora-detailer.safetensors\",\"guard\":false,\"strength\":0.4},{\"on\":true,\"lora\":\"None\",\"guard\":false,\"strength\":1},{\"on\":true,\"lora\":\"None\",\"guard\":false,\"strength\":1},{\"on\":true,\"lora\":\"None\",\"guard\":false,\"strength\":1},{\"on\":true,\"lora\":\"None\",\"guard\":false,\"strength\":1},{\"on\":true,\"lora\":\"None\",\"guard\":false,\"strength\":1},{\"on\":true,\"lora\":\"None\",\"guard\":false,\"strength\":1},{\"on\":true,\"lora\":\"None\",\"guard\":false,\"strength\":1},{\"on\":true,\"lora\":\"None\",\"guard\":false,\"strength\":1},{\"on\":true,\"lora\":\"None\",\"guard\":false,\"strength\":1}]",
+      "model": [
+        "207",
+        0
+      ],
+      "clip": [
+        "190",
+        0
+      ]
+    },
+    "class_type": "LTX2MasterLoaderLD",
+    "_meta": {
+      "title": "🕹️ LTX-2 Master Loader - LoRa-Daddy"
+    }
+  },
+  "276": {
+    "inputs": {
+      "preview": "Style: photorealistic. A young East Asian woman with long black hair stands in a dimlyly lit room, likely a hotel room given the bed visible in the background. She wears a revealing red satin dress adorned with floral embroidery and makes a heart shape with her hands over her chest. The lighting creates a halo effect around her head, highlighting her features against the dark backdrop. Her pose is confident and all she eye contact with the viewer, suggesting a professional photoshoot.",
+      "previewMode": null,
+      "source": [
+        "285",
+        0
+      ]
+    },
+    "class_type": "PreviewAny",
+    "_meta": {
+      "title": "Image Description"
+    }
+  },
+  "277": {
+    "inputs": {
+      "seed": 63
+    },
+    "class_type": "SeedGenerator",
+    "_meta": {
+      "title": "Shared seed"
+    }
+  },
+  "279": {
+    "inputs": {
+      "spatial_tiles": 2,
+      "spatial_overlap": 8,
+      "temporal_tile_length": 48,
+      "temporal_overlap": 4,
+      "last_frame_fix": false,
+      "working_device": "auto",
+      "working_dtype": "auto",
+      "vae": [
+        "184",
+        0
+      ],
+      "latents": [
+        "125",
+        0
+      ]
+    },
+    "class_type": "LTXVSpatioTemporalTiledVAEDecode",
+    "_meta": {
+      "title": "🅛🅣🅧 LTXV Spatio Temporal Tiled VAE Decode"
+    }
+  },
+  "285": {
+    "inputs": {
+      "model_name": "Qwen2.5-VL-7B — Better NSFW (prithiv caption)",
+      "offline_mode": true,
+      "local_path": "",
+      "image": [
+        "167",
+        0
+      ]
+    },
+    "class_type": "LTX2VisionDescribe",
+    "_meta": {
+      "title": "LTX-2 Vision Describe By LoRa-Daddy"
+    }
+  },
+  "289": {
+    "inputs": {
+      "purge_cache": true,
+      "purge_models": true,
+      "anything": [
+        "273:119",
+        1
+      ]
+    },
+    "class_type": "LayerUtility: PurgeVRAM V2",
+    "_meta": {
+      "title": "LayerUtility: Purge VRAM V2"
+    }
+  },
+  "290": {
+    "inputs": {
+      "bypass": false,
+      "user_input": "young chinese girl, take her cloth off",
+      "creativity": "0.9 - Balanced Professional",
+      "seed": [
+        "277",
+        0
+      ],
+      "invent_dialogue": false,
+      "keep_model_loaded": false,
+      "offline_mode": true,
+      "frame_count": [
+        "187",
+        0
+      ],
+      "model": "8B - NeuralDaredevil (High Quality)",
+      "local_path_8b": "",
+      "local_path_3b": "",
+      "scene_context": [
+        "285",
+        0
+      ],
+      "lora_triggers": ""
+    },
+    "class_type": "LTX2PromptArchitect",
+    "_meta": {
+      "title": "LTX-2 Easy Prompt By LoRa-Daddy"
+    }
+  },
+  "296": {
+    "inputs": {
+      "vae_name": "taeltx_2.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Preivewer Vae"
+    }
+  },
+  "300": {
+    "inputs": {
+      "audioUI": "/api/view?filename=ComfyUI_temp_goyml_00001_.flac&type=temp&subfolder=&rand=0.6987292889206471",
+      "audio": [
+        "201",
+        0
+      ]
+    },
+    "class_type": "PreviewAudio",
+    "_meta": {
+      "title": "Preview Audio"
+    }
+  },
+  "301": {
+    "inputs": {
+      "image": [
+        "167",
+        0
+      ]
+    },
+    "class_type": "GetImageSize+",
+    "_meta": {
+      "title": "🔧 Get Image Size"
+    }
+  },
+  "302": {
+    "inputs": {
+      "value": 24
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "FPS"
+    }
+  },
+  "306": {
+    "inputs": {
+      "value": [
+        "302",
+        0
+      ]
+    },
+    "class_type": "JWIntegerToFloat",
+    "_meta": {
+      "title": "Integer to Float"
+    }
+  },
+  "274:129": {
+    "inputs": {
+      "cfg": 1,
+      "model": [
+        "274:272",
+        0
+      ],
+      "positive": [
+        "107",
+        0
+      ],
+      "negative": [
+        "107",
+        1
+      ]
+    },
+    "class_type": "CFGGuider",
+    "_meta": {
+      "title": "CFGGuider"
+    }
+  },
+  "274:137": {
+    "inputs": {
+      "sampler_name": "euler_ancestral"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "274:206": {
+    "inputs": {
+      "steps": 8,
+      "max_shift": 2.05,
+      "base_shift": 0.95,
+      "stretch": true,
+      "terminal": 0.1,
+      "latent": [
+        "109",
+        0
+      ]
+    },
+    "class_type": "LTXVScheduler",
+    "_meta": {
+      "title": "LTXVScheduler"
+    }
+  },
+  "274:115": {
+    "inputs": {
+      "noise_seed": [
+        "277",
+        0
+      ]
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "RandomNoise"
+    }
+  },
+  "274:272": {
+    "inputs": {
+      "preview_rate": 8,
+      "model": [
+        "263",
+        0
+      ],
+      "vae": [
+        "296",
+        0
+      ]
+    },
+    "class_type": "LTX2SamplingPreviewOverride",
+    "_meta": {
+      "title": "LTX2 Sampling Preview Override"
+    }
+  },
+  "274:113": {
+    "inputs": {
+      "noise": [
+        "274:115",
+        0
+      ],
+      "guider": [
+        "274:129",
+        0
+      ],
+      "sampler": [
+        "274:137",
+        0
+      ],
+      "sigmas": [
+        "274:206",
+        0
+      ],
+      "latent_image": [
+        "109",
+        0
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "273:119": {
+    "inputs": {
+      "noise": [
+        "273:114",
+        0
+      ],
+      "guider": [
+        "273:103",
+        0
+      ],
+      "sampler": [
+        "273:138",
+        0
+      ],
+      "sigmas": [
+        "273:100",
+        0
+      ],
+      "latent_image": [
+        "273:117",
+        0
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "273:116": {
+    "inputs": {
+      "av_latent": [
+        "274:113",
+        0
+      ]
+    },
+    "class_type": "LTXVSeparateAVLatent",
+    "_meta": {
+      "title": "LTXVSeparateAVLatent"
+    }
+  },
+  "273:114": {
+    "inputs": {
+      "noise_seed": 12345
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "RandomNoise"
+    }
+  },
+  "273:118": {
+    "inputs": {
+      "samples": [
+        "273:116",
+        0
+      ],
+      "upscale_model": [
+        "189",
+        0
+      ],
+      "vae": [
+        "184",
+        0
+      ]
+    },
+    "class_type": "LTXVLatentUpsampler",
+    "_meta": {
+      "title": "spatial"
+    }
+  },
+  "273:103": {
+    "inputs": {
+      "cfg": 1,
+      "model": [
+        "273:271",
+        0
+      ],
+      "positive": [
+        "107",
+        0
+      ],
+      "negative": [
+        "107",
+        1
+      ]
+    },
+    "class_type": "CFGGuider",
+    "_meta": {
+      "title": "CFGGuider"
+    }
+  },
+  "273:160": {
+    "inputs": {
+      "strength": 1,
+      "bypass": false,
+      "vae": [
+        "184",
+        0
+      ],
+      "image": [
+        "162",
+        0
+      ],
+      "latent": [
+        "273:118",
+        0
+      ]
+    },
+    "class_type": "LTXVImgToVideoInplace",
+    "_meta": {
+      "title": "LTXVImgToVideoInplace"
+    }
+  },
+  "273:117": {
+    "inputs": {
+      "video_latent": [
+        "273:160",
+        0
+      ],
+      "audio_latent": [
+        "273:116",
+        1
+      ]
+    },
+    "class_type": "LTXVConcatAVLatent",
+    "_meta": {
+      "title": "LTXVConcatAVLatent"
+    }
+  },
+  "273:138": {
+    "inputs": {
+      "sampler_name": "euler_ancestral"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "273:100": {
+    "inputs": {
+      "sigmas": "0.909375, 0.725, 0.421875, 0.0"
+    },
+    "class_type": "ManualSigmas",
+    "_meta": {
+      "title": "ManualSigmas"
+    }
+  },
+  "273:271": {
+    "inputs": {
+      "preview_rate": 8,
+      "model": [
+        "274:272",
+        0
+      ],
+      "vae": [
+        "296",
+        0
+      ]
+    },
+    "class_type": "LTX2SamplingPreviewOverride",
+    "_meta": {
+      "title": "LTX2 Sampling Preview Override"
+    }
+  }
+}

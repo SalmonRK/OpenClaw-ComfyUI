@@ -1,0 +1,11 @@
+{
+  "name": "comfyui-skill",
+  "version": "1.3.0",
+  "description": "Professional ComfyUI control skill for OpenClaw with token-saving architecture, dynamic pathing from TOOLS.md, centralized media management, and character-consistent batch generation.",
+  "author": "SalmonRK",
+  "repository": "https://github.com/SalmonRK/OpenClaw-ComfyUI",
+  "keywords": ["comfyui", "ai-automation", "token-saving", "media-management", "batch-generation"],
+  "license": "MIT",
+  "main": "comfy_client.py",
+  "skill_file": "SKILL.md"
+}
