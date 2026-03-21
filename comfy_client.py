@@ -3,72 +3,51 @@ import requests
 import sys
 import os
 import time
-import re
 
-# --- DYNAMIC CONFIG ---
-def load_comfy_env():
-    env_path = os.path.join(SKILL_ROOT, ".env")
-    config = {"HOST": "127.0.0.1", "PORT": "8188"}
-    
-    if os.path.exists(env_path):
-        with open(env_path, 'r') as f:
-            for line in f:
-                if '=' in line and not line.startswith('#'):
-                    key, value = line.strip().split('=', 1)
-                    if key == "COMFY_HOST": config["HOST"] = value
-                    if key == "COMFY_PORT": config["PORT"] = value
-        return config
-    else:
-        # If no .env, try to fallback to TOOLS.md (existing logic) or ask
-        return None
+from config import load_config
 
-env_config = load_comfy_env()
-if env_config:
-    COMFY_HOST = env_config["HOST"]
-    COMFY_PORT = env_config["PORT"]
-else:
-    # Fallback to current TOOLS.md logic or prompt user if not found
-    COMFY_HOST = "127.0.0.1"
-    COMFY_PORT = "8188"
-    if os.path.exists(TOOLS_PATH):
-        with open(TOOLS_PATH, 'r') as f:
-            content = f.read()
-            host_match = re.search(r'Host:\s*([\d\.]+)', content)
-            port_match = re.search(r'Port:\s*(\d+)', content)
-            if host_match: COMFY_HOST = host_match.group(1).strip()
-            if port_match: COMFY_PORT = port_match.group(1).strip()
-    else:
-        print("CRITICAL: ComfyUI .env not found. Please provide COMFY_HOST and COMFY_PORT.")
-        sys.exit(1)
+# --- CONFIG ---
+_cfg = load_config()
+COMFY_HOST = _cfg["HOST"]
+COMFY_PORT = _cfg["PORT"]
+COMFY_URL = _cfg["COMFY_URL"]
+OUTPUT_DIR = _cfg["OUTPUT_DIR"]
+WORKFLOW_DIR = _cfg["WORKFLOW_DIR"]
 
-COMFY_URL = f"http://{COMFY_HOST}:{COMFY_PORT}"
-ALLOWED_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.mp4', '.mov', '.wav', '.mp3'}
 WORKFLOW_MAP = {
     "gen_z": os.path.join(WORKFLOW_DIR, "image_z_image_turbo.json"),
     "qwen_edit": os.path.join(WORKFLOW_DIR, "qwen_image_edit_2511.json")
 }
 
+ORIENTATIONS = {
+    "portrait": (720, 1280),
+    "landscape": (1280, 720),
+}
+
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+TIMEOUT = 30
+MAX_POLL = 150  # 150 * 2s = 5 min max wait
 
 def upload_file(input_path):
     with open(input_path, 'rb') as f:
         files = {'image': f}
-        res = requests.post(f"{COMFY_URL}/upload/image", files=files)
+        res = requests.post(f"{COMFY_URL}/upload/image", files=files, timeout=TIMEOUT)
         return res.json()
 
 def send_prompt(workflow_data):
     p = {"prompt": workflow_data}
     data = json.dumps(p).encode('utf-8')
-    res = requests.post(f"{COMFY_URL}/prompt", data=data)
+    res = requests.post(f"{COMFY_URL}/prompt", data=data, timeout=TIMEOUT)
     return res.json()
 
 def check_history(prompt_id):
-    res = requests.get(f"{COMFY_URL}/history/{prompt_id}")
+    res = requests.get(f"{COMFY_URL}/history/{prompt_id}", timeout=TIMEOUT)
     return res.json()
 
 def download_file(filename, subfolder, folder_type):
     url = f"{COMFY_URL}/view?filename={filename}&subfolder={subfolder}&type={folder_type}"
-    res = requests.get(url)
+    res = requests.get(url, timeout=60)
     file_path = os.path.join(OUTPUT_DIR, filename)
     with open(file_path, "wb") as f:
         f.write(res.content)
@@ -76,19 +55,40 @@ def download_file(filename, subfolder, folder_type):
 
 def main():
     if len(sys.argv) < 3:
-        print(json.dumps({"error": "Usage: python3 comfy_client.py <template_id> <prompt_text>"}))
+        print(json.dumps({"error": "Usage: python3 comfy_client.py <template_id> <prompt_text> [input_image_path] [portrait|landscape]"}))
         return
 
     template_id = sys.argv[1]
     prompt_text = sys.argv[2]
-    
-    width, height = (720, 1280)
+    extra_args = sys.argv[3:]
+
+    # Parse orientation and input_image_path from extra args
+    input_image_path = None
+    width, height = ORIENTATIONS["portrait"]
+    for arg in extra_args:
+        if arg.lower() in ORIENTATIONS:
+            width, height = ORIENTATIONS[arg.lower()]
+        else:
+            input_image_path = arg
 
     if template_id not in WORKFLOW_MAP:
         return
 
     with open(WORKFLOW_MAP[template_id], 'r') as f:
         workflow = json.load(f)
+
+    # --- IMAGE UPLOAD & INJECTION (for workflows with LoadImage) ---
+    if input_image_path:
+        if os.path.exists(input_image_path):
+            upload_res = upload_file(input_image_path)
+            uploaded_filename = upload_res.get("name")
+        else:
+            uploaded_filename = input_image_path
+
+        for node_id in workflow:
+            node = workflow[node_id]
+            if node.get("class_type") == "LoadImage":
+                node["inputs"]["image"] = uploaded_filename
 
     # --- CHARACTER LOGIC (Node 52) ---
     prompt_lower = prompt_text.lower()
@@ -110,7 +110,10 @@ def main():
 
     for node_id in workflow:
         node = workflow[node_id]
-        if node.get("class_type") in ["CLIPTextEncode", "TextEncodeQwenImageEditPlus"] or node_id in ["45", "50"]:
+        if node.get("class_type") == "TextEncodeQwenImageEditPlus":
+            if node.get("_meta", {}).get("title", "").endswith("(Positive)"):
+                node["inputs"]["prompt"] = prompt_text
+        elif node.get("class_type") == "CLIPTextEncode" or node_id in ["45", "50"]:
             if "inputs" in node:
                 if "prompt" in node["inputs"]: node["inputs"]["prompt"] = prompt_text
                 elif "text" in node["inputs"]: node["inputs"]["text"] = prompt_text
@@ -127,7 +130,7 @@ def main():
         return
 
     print(f"Connected to {COMFY_HOST}:{COMFY_PORT}. Job: {prompt_id}", file=sys.stderr)
-    while True:
+    for _ in range(MAX_POLL):
         history = check_history(prompt_id)
         if prompt_id in history:
             outputs = history[prompt_id].get("outputs", {})
@@ -140,6 +143,7 @@ def main():
             print(json.dumps({"status": "success", "files": results}))
             return
         time.sleep(2)
+    print(json.dumps({"error": "Timeout waiting for job", "prompt_id": prompt_id}))
 
 if __name__ == "__main__":
     main()

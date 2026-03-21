@@ -3,55 +3,41 @@ import requests
 import sys
 import os
 import time
-import re
 import random
 import uuid
 
-# --- DYNAMIC CONFIG ---
-COMFY_HOST = "192.168.1.42"
-COMFY_PORT = "8188"
+from config import load_config
 
-SKILL_ROOT = os.path.dirname(os.path.abspath(__file__))
-WORKSPACE_ROOT = os.path.abspath(os.path.join(SKILL_ROOT, "..", ".."))
-TOOLS_PATH = os.path.join(WORKSPACE_ROOT, "TOOLS.md")
-OUTPUT_DIR = os.path.join(WORKSPACE_ROOT, "..", "media", "comfy")
-WORKFLOW_DIR = os.path.join(SKILL_ROOT, "workflows")
-PRIVATE_WORKFLOW_DIR = os.path.join(WORKFLOW_DIR, "Private")
+# --- CONFIG ---
+_cfg = load_config()
+COMFY_HOST = _cfg["HOST"]
+COMFY_PORT = _cfg["PORT"]
+COMFY_URL = _cfg["COMFY_URL"]
+OUTPUT_DIR = _cfg["OUTPUT_DIR"]
+PRIVATE_WORKFLOW_DIR = _cfg["PRIVATE_WORKFLOW_DIR"]
 
-# Check for host/port in TOOLS.md but default to the above if not found
-if os.path.exists(TOOLS_PATH):
-    with open(TOOLS_PATH, 'r') as f:
-        content = f.read()
-        # Look for the ComfyUI section specifically to avoid picking up other hosts
-        comfy_section = re.search(r'### 🎨 Visual & Image Generation(.*?)(?=\n###|\Z)', content, re.DOTALL)
-        if comfy_section:
-            section_text = comfy_section.group(1)
-            host_match = re.search(r'Host:\s*([\d\.]+)', section_text)
-            port_match = re.search(r'Port:\s*(\d+)', section_text)
-            if host_match: COMFY_HOST = host_match.group(1).strip()
-            if port_match: COMFY_PORT = port_match.group(1).strip()
-
-COMFY_URL = f"http://{COMFY_HOST}:{COMFY_PORT}"
+TIMEOUT = 30
+MAX_POLL = 60  # 60 * 10s = 10 min max wait
 
 def upload_file(input_path):
     with open(input_path, 'rb') as f:
         files = {'image': f}
-        res = requests.post(f"{COMFY_URL}/upload/image", files=files)
+        res = requests.post(f"{COMFY_URL}/upload/image", files=files, timeout=TIMEOUT)
         return res.json()
 
 def send_prompt(workflow_data, client_id):
     p = {"prompt": workflow_data, "client_id": client_id}
     data = json.dumps(p).encode('utf-8')
-    res = requests.post(f"{COMFY_URL}/prompt", data=data)
+    res = requests.post(f"{COMFY_URL}/prompt", data=data, timeout=TIMEOUT)
     return res.json()
 
 def check_history(prompt_id):
-    res = requests.get(f"{COMFY_URL}/history/{prompt_id}")
+    res = requests.get(f"{COMFY_URL}/history/{prompt_id}", timeout=TIMEOUT)
     return res.json()
 
 def download_file(filename, subfolder, folder_type):
     url = f"{COMFY_URL}/view?filename={filename}&subfolder={subfolder}&type={folder_type}"
-    res = requests.get(url)
+    res = requests.get(url, timeout=120)
     file_path = os.path.join(OUTPUT_DIR, filename)
     with open(file_path, "wb") as f:
         f.write(res.content)
@@ -96,7 +82,7 @@ def main():
 
     print(f"Connected to {COMFY_HOST}:{COMFY_PORT}. Client: {client_id}. Job: {prompt_id}. Waiting...", file=sys.stderr)
     
-    while True:
+    for _ in range(MAX_POLL):
         history = check_history(prompt_id)
         if prompt_id in history:
             outputs = history[prompt_id].get("outputs", {})
@@ -116,6 +102,7 @@ def main():
             print(json.dumps({"status": "success", "files": results, "prompt_id": prompt_id}))
             return
         time.sleep(10)
+    print(json.dumps({"error": "Timeout waiting for video job", "prompt_id": prompt_id}))
 
 if __name__ == "__main__":
     main()
