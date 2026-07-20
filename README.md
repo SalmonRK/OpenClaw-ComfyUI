@@ -24,3 +24,7 @@ A professional, token-saving agent skill for connecting and controlling ComfyUI 
 - **Private Security:** All sensitive Host IPs/Ports kept in `.env` (excluded from GitHub).
 - **Proactive Delivery:** Automatically sends results to Telegram and opens on MacBook.
 - **Character System:** Strict LoRA injection for MariClaw/AsukaClaw; auto-disabled for other prompts.
+
+## Download History
+
+[![Download History](https://skill-history.com/chart/salmonrk/openclaw-comfyui.svg)](https://skill-history.com/salmonrk/openclaw-comfyui)
